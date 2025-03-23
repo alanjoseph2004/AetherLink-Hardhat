@@ -1,0 +1,36 @@
+# Node.js dependencies
+node_modules/
+package-lock.json
+
+# Hardhat build artifacts and cache
+artifacts/
+cache/
+
+# Hardhat compilation output
+build-info/
+
+# Environment variables
+.env
+
+# VS Code settings (optional)
+.vscode/
+
+# Ignition and deployment-related files
+ignition/
+deployments/
+
+# Docker files (if not needed in repo)
+.dockerignore
+Dockerfile
+
+# Hardhat config (if sensitive data is inside, otherwise keep it tracked)
+# hardhat.config.js
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+debug.log*
+
+# Misc
+.DS_Store
