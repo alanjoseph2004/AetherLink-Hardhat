@@ -308,8 +308,8 @@
       ]
     },
     "/home/alanjoseph/AetherLinkHardhat/contracts/Bidding.sol": {
-      "lastModificationDate": 1738081770247,
-      "contentHash": "8ef69108afdfdb4d7375edf868a6aabb",
+      "lastModificationDate": 1742743563802,
+      "contentHash": "93e482d50a54fe2aadd5499ec7d6a72e",
       "sourceName": "contracts/Bidding.sol",
       "solcConfig": {
         "version": "0.8.28",
