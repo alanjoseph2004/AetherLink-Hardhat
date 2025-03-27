@@ -1,83 +1,7 @@
 {
   "_format": "hh-sol-cache-2",
   "files": {
-    "/home/alanjoseph/AetherLinkHardhat/contracts/Lock.sol": {
-      "lastModificationDate": 1737465055557,
-      "contentHash": "0a3c643d677a4143f9ed528b8837fcb3",
-      "sourceName": "contracts/Lock.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "viaIR": true,
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "hardhat/console.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.28"
-      ],
-      "artifacts": [
-        "Lock"
-      ]
-    },
-    "/home/alanjoseph/AetherLinkHardhat/node_modules/hardhat/console.sol": {
-      "lastModificationDate": 1737373102358,
-      "contentHash": "681c532e816169606d13a5fe8b475074",
-      "sourceName": "hardhat/console.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "viaIR": true,
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [],
-      "versionPragmas": [
-        ">=0.4.22 <0.9.0"
-      ],
-      "artifacts": [
-        "console"
-      ]
-    },
-    "/home/alanjoseph/AetherLinkHardhat/contracts/ProductRegistration.sol": {
+    "/home/alanjoseph/Desktop/AetherLinkHardhat/contracts/ProductRegistration.sol": {
       "lastModificationDate": 1742734890756,
       "contentHash": "d45b677d9c872fc6a1cfefd48c23afa8",
       "sourceName": "contracts/ProductRegistration.sol",
@@ -116,7 +40,7 @@
         "ProductRegistration"
       ]
     },
-    "/home/alanjoseph/AetherLinkHardhat/node_modules/@openzeppelin/contracts/access/AccessControl.sol": {
+    "/home/alanjoseph/Desktop/AetherLinkHardhat/node_modules/@openzeppelin/contracts/access/AccessControl.sol": {
       "lastModificationDate": 1737378333600,
       "contentHash": "4c80b7fdf559a9a348e832a57d072a0b",
       "sourceName": "@openzeppelin/contracts/access/AccessControl.sol",
@@ -157,7 +81,7 @@
         "AccessControl"
       ]
     },
-    "/home/alanjoseph/AetherLinkHardhat/node_modules/@openzeppelin/contracts/utils/Context.sol": {
+    "/home/alanjoseph/Desktop/AetherLinkHardhat/node_modules/@openzeppelin/contracts/utils/Context.sol": {
       "lastModificationDate": 1737378334014,
       "contentHash": "67bfbc07588eb8683b3fd8f6f909563e",
       "sourceName": "@openzeppelin/contracts/utils/Context.sol",
@@ -194,7 +118,7 @@
         "Context"
       ]
     },
-    "/home/alanjoseph/AetherLinkHardhat/node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": {
+    "/home/alanjoseph/Desktop/AetherLinkHardhat/node_modules/@openzeppelin/contracts/utils/introspection/ERC165.sol": {
       "lastModificationDate": 1737378334076,
       "contentHash": "7c03c1e37c3dc24eafb76dc2b8a5c3a6",
       "sourceName": "@openzeppelin/contracts/utils/introspection/ERC165.sol",
@@ -233,7 +157,7 @@
         "ERC165"
       ]
     },
-    "/home/alanjoseph/AetherLinkHardhat/node_modules/@openzeppelin/contracts/access/IAccessControl.sol": {
+    "/home/alanjoseph/Desktop/AetherLinkHardhat/node_modules/@openzeppelin/contracts/access/IAccessControl.sol": {
       "lastModificationDate": 1737378334239,
       "contentHash": "6f7fac9fa0df6004375e18b7ff7edf4e",
       "sourceName": "@openzeppelin/contracts/access/IAccessControl.sol",
@@ -270,7 +194,7 @@
         "IAccessControl"
       ]
     },
-    "/home/alanjoseph/AetherLinkHardhat/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": {
+    "/home/alanjoseph/Desktop/AetherLinkHardhat/node_modules/@openzeppelin/contracts/utils/introspection/IERC165.sol": {
       "lastModificationDate": 1737378334258,
       "contentHash": "bf0119eb2a570f219729ff38b6cd1df8",
       "sourceName": "@openzeppelin/contracts/utils/introspection/IERC165.sol",
@@ -305,45 +229,6 @@
       ],
       "artifacts": [
         "IERC165"
-      ]
-    },
-    "/home/alanjoseph/AetherLinkHardhat/contracts/Bidding.sol": {
-      "lastModificationDate": 1742743563802,
-      "contentHash": "93e482d50a54fe2aadd5499ec7d6a72e",
-      "sourceName": "contracts/Bidding.sol",
-      "solcConfig": {
-        "version": "0.8.28",
-        "settings": {
-          "optimizer": {
-            "enabled": true,
-            "runs": 200
-          },
-          "viaIR": true,
-          "evmVersion": "paris",
-          "outputSelection": {
-            "*": {
-              "*": [
-                "abi",
-                "evm.bytecode",
-                "evm.deployedBytecode",
-                "evm.methodIdentifiers",
-                "metadata"
-              ],
-              "": [
-                "ast"
-              ]
-            }
-          }
-        }
-      },
-      "imports": [
-        "@openzeppelin/contracts/access/AccessControl.sol"
-      ],
-      "versionPragmas": [
-        "^0.8.20"
-      ],
-      "artifacts": [
-        "Bidding"
       ]
     }
   }

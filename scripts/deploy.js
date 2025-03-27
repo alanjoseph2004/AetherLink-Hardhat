@@ -1,24 +1,41 @@
+const hre = require("hardhat");
+const fs = require("fs");
+const path = require("path");
+
 async function main() {
-  const unlockTime = Math.floor(Date.now() / 1000) + 60; // Current time + 60 seconds
-
-  // Deploy the Lock contract
-  const Lock = await ethers.getContractFactory("Lock");
-  const lock = await Lock.deploy(unlockTime);
-  console.log("Lock deployed to:", await lock.getAddress());
-
-  // Deploy the ProductRegistration contract
-  const ProductRegistration = await ethers.getContractFactory("ProductRegistration");
+  // Get the contract factory
+  const ProductRegistration = await hre.ethers.getContractFactory("ProductRegistration");
+  
+  // Deploy the contract
   const productRegistration = await ProductRegistration.deploy();
-  console.log("ProductRegistration contract deployed to:", await productRegistration.getAddress());
-
-  // Deploy the Bidding contract
-  const Bidding = await ethers.getContractFactory("Bidding");
-  const bidding = await Bidding.deploy();
-  console.log("Bidding contract deployed to:", await bidding.getAddress());
+  
+  // Wait for the contract to be deployed
+  await productRegistration.waitForDeployment();
+  
+  // Get the deployed contract address
+  const address = await productRegistration.getAddress();
+  
+  console.log("ProductRegistration contract deployed to:", address);
+  
+  // Optionally, write the address to a file
+  const contractsDir = path.join(__dirname, "..", "frontend", "contracts");
+  
+  // Ensure the directory exists
+  if (!fs.existsSync(contractsDir)) {
+    fs.mkdirSync(contractsDir, { recursive: true });
+  }
+  
+  // Write contract address
+  fs.writeFileSync(
+    path.join(contractsDir, "contract-address.json"),
+    JSON.stringify({ address: address }, null, 2)
+  );
 }
 
-// Execute the main function
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// Recommended pattern for catching and logging errors
+main()
+  .then(() => process.exit(0))
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  });
