@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Registration DApp</title>
+    <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Product Registration DApp</h1>
+        
+        <div class="connection-section">
+            <button id="connectWallet">Connect Wallet</button>
+            <p id="walletAddress">Not Connected</p>
+        </div>
+
+        <div class="register-product-section">
+            <h2>Register New Product</h2>
+            <form id="registerProductForm">
+                <input type="text" id="productName" placeholder="Product Name" required>
+                <textarea id="productDetails" placeholder="Product Details" required></textarea>
+                <input type="text" id="productQuantity" placeholder="Quantity" required>
+                <input type="number" id="productPrice" placeholder="Price (ETH)" step="0.01" required>
+                <button type="submit">Register Product</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Corrected ethers.js version -->
+    <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.umd.min.js"></script>
+    <script src="./app.js" defer></script>
+</body>
+</html>

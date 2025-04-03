@@ -177,6 +177,14 @@ contract ProductRegistration is AccessControl {
     }
     
     /**
+     * @dev Get total number of products
+     * @return Total number of products registered
+     */
+    function getProductCount() public view returns (uint256) {
+        return productCounter;
+    }
+    
+    /**
      * @dev Grant producer role to an account
      * @param account Address to grant the role to
      */
@@ -197,22 +205,37 @@ contract ProductRegistration is AccessControl {
      * @param producer Address of the producer
      * @param startId Start ID for pagination
      * @param count Number of products to return
-     * @return Array of product IDs
+     * @return Array of Products
      */
     function getProductsByProducer(address producer, uint256 startId, uint256 count) 
         public 
         view 
-        returns (uint256[] memory) 
+        returns (Product[] memory) 
     {
         require(count > 0, "Count must be greater than zero");
         
-        uint256[] memory result = new uint256[](count);
+        // Count total products by this producer
+        uint256 totalProducerProducts = 0;
+        for (uint256 i = startId; i <= productCounter; i++) {
+            if (products[i].producer == producer) {
+                totalProducerProducts++;
+            }
+        }
+        
+        // Create array to store matching products
+        Product[] memory result = new Product[](totalProducerProducts);
         uint256 resultIndex = 0;
         
-        for (uint256 i = startId; i <= productCounter && resultIndex < count; i++) {
+        // Populate the array
+        for (uint256 i = startId; i <= productCounter; i++) {
             if (products[i].producer == producer) {
-                result[resultIndex] = i;
+                result[resultIndex] = products[i];
                 resultIndex++;
+                
+                // Stop if we've reached the desired count
+                if (resultIndex >= totalProducerProducts) {
+                    break;
+                }
             }
         }
         
