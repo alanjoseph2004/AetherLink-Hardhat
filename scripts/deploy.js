@@ -3,19 +3,18 @@ const fs = require("fs");
 const path = require("path");
 
 async function main() {
-  // Get the contract factory
-  const ProductRegistration = await hre.ethers.getContractFactory("ProductRegistration");
+  // Get the contract factory for the integrated contract
+  const ProductTransportMarketplace = await hre.ethers.getContractFactory("ProductTransportMarketplace");
   
   // Deploy the contract
-  const productRegistration = await ProductRegistration.deploy();
+  const marketplace = await ProductTransportMarketplace.deploy();
   
   // Wait for the contract to be deployed
-  await productRegistration.waitForDeployment();
+  await marketplace.waitForDeployment();
   
   // Get the deployed contract address
-  const address = await productRegistration.getAddress();
-  
-  console.log("ProductRegistration contract deployed to:", address);
+  const address = await marketplace.getAddress();
+  console.log("ProductTransportMarketplace contract deployed to:", address);
   
   // Optionally, write the address to a file
   const contractsDir = path.join(__dirname, "..", "frontend", "contracts");
