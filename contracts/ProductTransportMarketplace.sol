@@ -3,10 +3,6 @@ pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/access/AccessControl.sol";
 
-/**
- * @title ProductTransportMarketplace
- * @dev Smart contract integrating product registration and transportation auctions
- */
 contract ProductTransportMarketplace is AccessControl {
     bytes32 public constant PRODUCER_ROLE = keccak256("PRODUCER_ROLE");
     bytes32 public constant CARRIER_ROLE = keccak256("CARRIER_ROLE");
@@ -57,6 +53,39 @@ contract ProductTransportMarketplace is AccessControl {
         string notes;
     }
     
+    // Transport Definitions
+    enum TransportStatus { 
+        NotStarted,
+        InTransit,
+        Delivered,
+        Delayed,
+        Disputed
+    }
+
+    struct Checkpoint {
+        uint256 checkpointId;
+        string location;
+        uint256 timestamp;
+        string notes;
+        address updatedBy;
+    }
+
+    struct TransportRecord {
+        uint256 transportId;
+        uint256 auctionId;
+        uint256 productId;
+        address carrier;
+        address producer;
+        string originLocation;
+        string destinationLocation;
+        uint256 startTime;
+        uint256 estimatedDeliveryTime;
+        uint256 actualDeliveryTime;
+        TransportStatus status;
+        uint256 checkpointCount;
+        bool producerConfirmed;
+    }
+    
     // Storage
     mapping(uint256 => Product) public products;
     uint256 public productCounter;
@@ -64,6 +93,10 @@ contract ProductTransportMarketplace is AccessControl {
     mapping(uint256 => Auction) public auctions;
     mapping(uint256 => Bid[]) public auctionBids;
     uint256 public auctionCounter;
+    
+    mapping(uint256 => TransportRecord) public transportRecords;
+    mapping(uint256 => mapping(uint256 => Checkpoint)) public transportCheckpoints;
+    uint256 public transportCounter;
     
     // Events for Products
     event ProductRegistered(
@@ -121,19 +154,29 @@ contract ProductTransportMarketplace is AccessControl {
         uint256 timestamp
     );
     
+    // Events for Transport
+    event TransportEvent(
+        uint256 indexed transportId,
+        uint256 indexed productId,
+        string eventType,
+        address actor,
+        uint256 timestamp
+    );
+
+    event CheckpointAdded(
+        uint256 indexed transportId,
+        uint256 indexed checkpointId,
+        string location,
+        uint256 timestamp
+    );
+    
     constructor() {
         _grantRole(DEFAULT_ADMIN_ROLE, msg.sender);
         _grantRole(PRODUCER_ROLE, msg.sender);
     }
     
-    /**
-     * @dev Register a new product
-     * @param name Name of the product
-     * @param details Detailed description of the product
-     * @param quantity Quantity information
-     * @param price Price in wei
-     * @return productId ID of the newly registered product
-     */
+    // PRODUCT FUNCTIONS
+    
     function registerProduct(
         string memory name,
         string memory details,
@@ -175,13 +218,6 @@ contract ProductTransportMarketplace is AccessControl {
         return productCounter;
     }
     
-    /**
-     * @dev Update an existing product
-     * @param productId ID of the product to update
-     * @param quantity New quantity information
-     * @param price New price in wei
-     * @param details New product details
-     */
     function updateProduct(
         uint256 productId,
         string memory quantity,
@@ -216,11 +252,6 @@ contract ProductTransportMarketplace is AccessControl {
         );
     }
     
-    /**
-     * @dev Change the status of a product
-     * @param productId ID of the product
-     * @param newStatus New status to set
-     */
     function changeProductStatus(uint256 productId, ProductStatus newStatus) 
         public 
     {
@@ -238,11 +269,6 @@ contract ProductTransportMarketplace is AccessControl {
         emit ProductStatusChanged(productId, newStatus, block.timestamp);
     }
     
-    /**
-     * @dev Get product details
-     * @param productId ID of the product
-     * @return Product memory containing all product details
-     */
     function getProduct(uint256 productId) public view returns (Product memory) {
         require(productId > 0 && productId <= productCounter, "Invalid product ID");
         require(products[productId].productId != 0, "Product does not exist");
@@ -250,19 +276,8 @@ contract ProductTransportMarketplace is AccessControl {
         return products[productId];
     }
     
-    /**
-     * @dev Create a new auction for a registered product
-     * @param productId ID of the registered product
-     * @param title Title of the auction
-     * @param description Detailed description
-     * @param duration Duration of the auction in seconds
-     * @param originLocation Starting location
-     * @param destinationLocation Ending location
-     * @param startingPrice Starting price in wei
-     * @param specialRequirements Any special requirements
-     * @param weight Weight in kg if applicable
-     * @return auctionId ID of the newly created auction
-     */
+    // AUCTION FUNCTIONS
+    
     function createProductAuction(
         uint256 productId,
         string memory title,
@@ -329,12 +344,6 @@ contract ProductTransportMarketplace is AccessControl {
         return auctionCounter;
     }
     
-    /**
-     * @dev Place a bid on an auction
-     * @param auctionId ID of the auction
-     * @param bidAmount Bid amount in wei
-     * @param notes Optional notes from carrier
-     */
     function placeBid(uint256 auctionId, uint256 bidAmount, string memory notes) 
         public 
         onlyRole(CARRIER_ROLE) 
@@ -366,10 +375,6 @@ contract ProductTransportMarketplace is AccessControl {
         emit BidPlaced(auctionId, msg.sender, bidAmount, block.timestamp);
     }
     
-    /**
-     * @dev Complete an auction and award to lowest bidder
-     * @param auctionId ID of the auction to complete
-     */
     function completeAuction(uint256 auctionId) public {
         Auction storage auction = auctions[auctionId];
         
@@ -394,11 +399,7 @@ contract ProductTransportMarketplace is AccessControl {
             block.timestamp
         );
     }
-    
-    /**
-     * @dev Cancel an auction (only by producer or admin)
-     * @param auctionId ID of the auction to cancel
-     */
+
     function cancelAuction(uint256 auctionId) public {
         Auction storage auction = auctions[auctionId];
         
@@ -420,11 +421,6 @@ contract ProductTransportMarketplace is AccessControl {
         emit AuctionCancelled(auctionId, block.timestamp);
     }
     
-    /**
-     * @dev Get auction details
-     * @param auctionId ID of the auction
-     * @return Auction memory containing all auction details
-     */
     function getAuction(uint256 auctionId) public view returns (Auction memory) {
         require(auctionId > 0 && auctionId <= auctionCounter, "Invalid auction ID");
         require(auctions[auctionId].auctionId != 0, "Auction does not exist");
@@ -432,11 +428,6 @@ contract ProductTransportMarketplace is AccessControl {
         return auctions[auctionId];
     }
     
-    /**
-     * @dev Get all bids for an auction
-     * @param auctionId ID of the auction
-     * @return Array of Bids
-     */
     function getAuctionBids(uint256 auctionId) public view returns (Bid[] memory) {
         require(auctionId > 0 && auctionId <= auctionCounter, "Invalid auction ID");
         require(auctions[auctionId].auctionId != 0, "Auction does not exist");
@@ -444,13 +435,6 @@ contract ProductTransportMarketplace is AccessControl {
         return auctionBids[auctionId];
     }
     
-    /**
-     * @dev Get all products by a specific producer
-     * @param producer Address of the producer
-     * @param startId Start ID for pagination
-     * @param count Number of products to return
-     * @return Array of Products
-     */
     function getProductsByProducer(address producer, uint256 startId, uint256 count) 
         public 
         view 
@@ -481,12 +465,6 @@ contract ProductTransportMarketplace is AccessControl {
         return result;
     }
     
-    /**
-     * @dev Get active auctions
-     * @param startId Start ID for pagination
-     * @param count Number of auctions to return
-     * @return Array of Auctions
-     */
     function getActiveAuctions(uint256 startId, uint256 count) 
         public 
         view 
@@ -518,11 +496,6 @@ contract ProductTransportMarketplace is AccessControl {
         return result;
     }
     
-    /**
-     * @dev Get products that don't have auctions yet
-     * @param producer Address of the producer
-     * @return Array of Products without auctions
-     */
     function getProductsWithoutAuctions(address producer) 
         public 
         view 
@@ -552,53 +525,278 @@ contract ProductTransportMarketplace is AccessControl {
         return result;
     }
     
-    /**
-     * @dev Grant producer role to an account
-     * @param account Address to grant the role to
-     */
+    // TRANSPORT FUNCTIONS
+    
+    function createTransport(
+        uint256 auctionId,
+        uint256 estimatedDeliveryTime
+    ) 
+        public
+        returns (uint256)
+    {
+        Auction storage auction = auctions[auctionId];
+        
+        require(auction.auctionId != 0, "Auction does not exist");
+        require(auction.status == AuctionStatus.Completed, "Auction must be completed");
+        require(auction.lowestBidder == msg.sender, "Only winning carrier can create transport");
+        
+        // Get the associated product
+        Product storage product = products[auction.productId];
+        require(product.status == ProductStatus.Active, "Product must be active");
+        
+        transportCounter++;
+        
+        transportRecords[transportCounter] = TransportRecord({
+            transportId: transportCounter,
+            auctionId: auctionId,
+            productId: auction.productId,
+            carrier: msg.sender,
+            producer: auction.producer,
+            originLocation: auction.originLocation,
+            destinationLocation: auction.destinationLocation,
+            startTime: block.timestamp,
+            estimatedDeliveryTime: estimatedDeliveryTime,
+            actualDeliveryTime: 0,
+            status: TransportStatus.InTransit,
+            checkpointCount: 0,
+            producerConfirmed: false
+        });
+        
+        emit TransportEvent(
+            transportCounter,
+            auction.productId,
+            "CREATED",
+            msg.sender,
+            block.timestamp
+        );
+        
+        return transportCounter;
+    }
+    
+    function addCheckpoint(
+        uint256 transportId,
+        string memory location,
+        string memory notes
+    ) 
+        public
+    {
+        TransportRecord storage transport = transportRecords[transportId];
+        
+        require(transport.transportId != 0, "Transport does not exist");
+        require(transport.carrier == msg.sender, "Only carrier can add checkpoints");
+        require(transport.status == TransportStatus.InTransit || transport.status == TransportStatus.Delayed, 
+            "Transport must be in transit or delayed");
+        
+        // Increment checkpoint counter
+        transport.checkpointCount++;
+        
+        // Add the new checkpoint
+        uint256 checkpointId = transport.checkpointCount;
+        transportCheckpoints[transportId][checkpointId] = Checkpoint({
+            checkpointId: checkpointId,
+            location: location,
+            timestamp: block.timestamp,
+            notes: notes,
+            updatedBy: msg.sender
+        });
+        
+        emit CheckpointAdded(
+            transportId,
+            checkpointId,
+            location,
+            block.timestamp
+        );
+    }
+    
+    function updateTransportStatus(
+        uint256 transportId,
+        TransportStatus newStatus,
+        string memory notes
+    ) 
+        public
+    {
+        TransportRecord storage transport = transportRecords[transportId];
+        
+        require(transport.transportId != 0, "Transport does not exist");
+        require(
+            transport.carrier == msg.sender || 
+            transport.producer == msg.sender || 
+            hasRole(DEFAULT_ADMIN_ROLE, msg.sender),
+            "Not authorized"
+        );
+        
+        // Special validation for certain status changes
+        if (newStatus == TransportStatus.Delivered) {
+            require(transport.carrier == msg.sender, "Only carrier can mark as delivered");
+            transport.actualDeliveryTime = block.timestamp;
+        }
+        
+        transport.status = newStatus;
+        
+        // Add an automatic checkpoint for status updates
+        transport.checkpointCount++;
+        transportCheckpoints[transportId][transport.checkpointCount] = Checkpoint({
+            checkpointId: transport.checkpointCount,
+            location: "Status Update",
+            timestamp: block.timestamp,
+            notes: notes,
+            updatedBy: msg.sender
+        });
+        
+        emit TransportEvent(
+            transportId,
+            transport.productId,
+            "STATUS_UPDATED",
+            msg.sender,
+            block.timestamp
+        );
+    }
+    
+    function completeDelivery(
+        uint256 transportId,
+        string memory finalLocation
+    ) 
+        public
+    {
+        TransportRecord storage transport = transportRecords[transportId];
+        
+        require(transport.transportId != 0, "Transport does not exist");
+        require(transport.carrier == msg.sender, "Only carrier can complete delivery");
+        require(
+            transport.status == TransportStatus.InTransit || 
+            transport.status == TransportStatus.Delayed,
+            "Transport must be in transit or delayed"
+        );
+        
+        transport.status = TransportStatus.Delivered;
+        transport.actualDeliveryTime = block.timestamp;
+        
+        // Add final checkpoint
+        transport.checkpointCount++;
+        transportCheckpoints[transportId][transport.checkpointCount] = Checkpoint({
+            checkpointId: transport.checkpointCount,
+            location: finalLocation,
+            timestamp: block.timestamp,
+            notes: "Delivery completed",
+            updatedBy: msg.sender
+        });
+        
+        emit TransportEvent(
+            transportId,
+            transport.productId,
+            "DELIVERED",
+            msg.sender,
+            block.timestamp
+        );
+    }
+    
+    function confirmDelivery(uint256 transportId) public {
+        TransportRecord storage transport = transportRecords[transportId];
+        
+        require(transport.transportId != 0, "Transport does not exist");
+        require(transport.producer == msg.sender, "Only producer can confirm");
+        require(transport.status == TransportStatus.Delivered, "Must be delivered first");
+        require(!transport.producerConfirmed, "Already confirmed");
+        
+        transport.producerConfirmed = true;
+        
+        emit TransportEvent(
+            transportId,
+            transport.productId,
+            "CONFIRMED",
+            msg.sender,
+            block.timestamp
+        );
+    }
+    
+    function raiseDispute(uint256 transportId, string memory reason) public {
+        TransportRecord storage transport = transportRecords[transportId];
+        
+        require(transport.transportId != 0, "Transport does not exist");
+        require(
+            transport.carrier == msg.sender || 
+            transport.producer == msg.sender,
+            "Only carrier or producer can dispute"
+        );
+        
+        transport.status = TransportStatus.Disputed;
+        
+        // Add dispute checkpoint
+        transport.checkpointCount++;
+        transportCheckpoints[transportId][transport.checkpointCount] = Checkpoint({
+            checkpointId: transport.checkpointCount,
+            location: "Dispute",
+            timestamp: block.timestamp,
+            notes: reason,
+            updatedBy: msg.sender
+        });
+        
+        emit TransportEvent(
+            transportId,
+            transport.productId,
+            "DISPUTED",
+            msg.sender,
+            block.timestamp
+        );
+    }
+    
+    function getTransportCheckpoints(uint256 transportId) public view returns (Checkpoint[] memory) {
+        TransportRecord storage transport = transportRecords[transportId];
+        require(transport.transportId != 0, "Transport does not exist");
+        
+        Checkpoint[] memory checkpoints = new Checkpoint[](transport.checkpointCount);
+        for (uint256 i = 1; i <= transport.checkpointCount; i++) {
+            checkpoints[i-1] = transportCheckpoints[transportId][i];
+        }
+        return checkpoints;
+    }
+    
+    function getTransport(uint256 transportId) public view returns (TransportRecord memory) {
+        require(transportId > 0 && transportId <= transportCounter, "Invalid ID");
+        require(transportRecords[transportId].transportId != 0, "Transport does not exist");
+        return transportRecords[transportId];
+    }
+    
+    function isTransportDelayed(uint256 transportId) public view returns (bool) {
+        TransportRecord storage transport = transportRecords[transportId];
+        require(transport.transportId != 0, "Transport does not exist");
+        
+        if (transport.status == TransportStatus.Delayed) {
+            return true;
+        }
+        
+        if (transport.status == TransportStatus.Delivered) {
+            return false;
+        }
+        
+        return (block.timestamp > transport.estimatedDeliveryTime);
+    }
+    
+    // ROLE MANAGEMENT FUNCTIONS
+    
     function grantProducerRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(PRODUCER_ROLE, account);
     }
     
-    /**
-     * @dev Grant carrier role to an account
-     * @param account Address to grant the role to
-     */
     function grantCarrierRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
         grantRole(CARRIER_ROLE, account);
     }
-    
-    /**
-     * @dev Revoke producer role from an account
-     * @param account Address to revoke the role from
-     */
+
     function revokeProducerRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
         revokeRole(PRODUCER_ROLE, account);
     }
     
-    /**
-     * @dev Revoke carrier role from an account
-     * @param account Address to revoke the role from
-     */
     function revokeCarrierRole(address account) public onlyRole(DEFAULT_ADMIN_ROLE) {
         revokeRole(CARRIER_ROLE, account);
     }
     
-    /**
-     * @dev Check if an auction has ended and needs to be finalized
-     * @param auctionId ID of the auction
-     * @return boolean indicating if auction needs to be completed
-     */
+    // UTILITY FUNCTIONS
+    
     function isAuctionEnded(uint256 auctionId) public view returns (bool) {
         Auction storage auction = auctions[auctionId];
         return (auction.status == AuctionStatus.Active && block.timestamp >= auction.endTime);
     }
     
-    /**
-     * @dev Get time remaining for an auction in seconds
-     * @param auctionId ID of the auction
-     * @return seconds remaining, 0 if auction ended
-     */
     function getTimeRemaining(uint256 auctionId) public view returns (uint256) {
         Auction storage auction = auctions[auctionId];
         if (auction.status != AuctionStatus.Active || block.timestamp >= auction.endTime) {
