@@ -193,8 +193,8 @@
       ]
     },
     "/home/alanjoseph/Desktop/AetherLinkHardhat/contracts/ProductTransportMarketplace.sol": {
-      "lastModificationDate": 1744273006640,
-      "contentHash": "84647b3a56593e7fcdcb35d6e5c85d0c",
+      "lastModificationDate": 1744363560634,
+      "contentHash": "74117ddc17d4fb6b59069ef65d6d97a9",
       "sourceName": "contracts/ProductTransportMarketplace.sol",
       "solcConfig": {
         "version": "0.8.28",
